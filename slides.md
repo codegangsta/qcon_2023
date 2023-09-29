@@ -4,7 +4,8 @@ theme: css/synadia.css
 
 <!-- slide bg="./images/Aurora-5k.jpg" -->
 <grid drag="100 75" drop="topleft" >
-# **Supercharged** Micro-services with **NATS** and **Go**
+## Rethinking Connectivity<br> at the Edge
+Scaling fleets of low-powered devices using NATS.io
 </grid>
 
 <grid drag="100 50" drop="bottomleft" >
@@ -20,29 +21,8 @@ Senior Software Engineer at Synadia
 
 ---
 
-# Agenda
-
----
-
-##### Agenda
-
-## Today's Workshop
-
-- 4 hours, broken down into 4 sections
-- Lecture + Exercises
-- 45 minutes work, 15 minutes break
-
----
-
-##### Agenda
-
-## Today's Workshop
-
-- Hour 1: **Rethinking Connectivity**
-- Hour 2: **Building Micro-services in Go**
-- Hour 3: **The NATS Server**
-- Hour 4: **JetStream and Persistence**
-- Bonus: **Authentication and Authorization**
+## Before we begin...
+{Add link to survey app here}
 
 ---
 
@@ -68,11 +48,11 @@ Senior Software Engineer at Synadia
 
 ---
 
+---
+
 # 🙏 Pray to the Demo Gods
 
 ---
-
-#### Lecture:
 
 ## Rethinking Connectivity
 
@@ -168,293 +148,11 @@ It aims to **simplify** the number of technologies you use for your services to 
 ---
 
 ##### Rethinking Connectivity
-
-## Core NATS Demo
-
----
-
-### Exercise #1:
-
-## Install the NATS CLI
-
----
-
-##### Install the NATS CLI
-
-## Now it's your turn!
-
-```bash
-$ go install \
-    github.com/nats-io/natscli/nats@latest
-
-$ nats help
-```
-
----
-
-### Exercise #2:
-
-## Connecting the Room Part I
-
----
-
-##### Connecting the Room Part I
-
-## Setting up a NATS context
-
-```
-$ nats context save --select demo \
-    --server "nats://demo.nats.io:4222"
-
-#   Server URLs: nats://demo.nats.io:4222
-#         Path: ...
-#   Connection: OK
-```
-
----
-
-##### Connecting the Room Part I
-
-## Calling the guestbook service
-
-```
-$ nats req gophercon.guestbook ""
-```
-
----
-
-##### Connecting the Room Part I
-
-## Hosting your own service
-
-```
-$ nats reply gophercon.rollcall \
-    "YOUR NAME HERE" --queue ""
-```
-
----
-
-##### Connecting the Room Part I
-
-## Play the queue group lottery
-
-```
-$ nats reply gophercon.lottery \
-    "YOUR NAME HERE" --queue "lottery"
-```
-
----
-
-##### Connecting the Room Part I
-
-## Poor-mans chat
-
-```
-$ nats sub "gophercon.chatroom.>"
-```
-
-And in another window:
-
-```
-$ nats pub gophercon.chatroom.[handle] \
-    "Your Message Here"
-```
-
----
-
-### Lecture:
-
-## NATS For Micro-service Architectures
-
----
-
-##### NATS For Micro-service Architectures
-
-## What makes a good architecture?
-
-- Resilient
-- Secure
-- Observable
-- Extensible
-- Adaptive to change
-
----
-
-##### NATS For Micro-service Architectures
-
-## What NATS gives us
-
-- Resilience
-- Secure multi-tenancy
-- Location transparency
-- Observability
-- Multi-pattern development
-
----
-
-##### NATS For Micro-service Architectures
-
-## Resilience
-
-- **Clients** self heal and reconnect to available servers automatically
-- **Servers** protect themselves at all costs
-- **Failover** to other Geos/Clouds is **automatic**
-- **Load balancing** comes for **free**
-
----
-
-##### NATS For Micro-service Architectures
-
-## Secure Multi-tenancy
-
-- **Decentralize** authentication and authorization
-- **Isolate** NATS environments via **Accounts**
-- **Share** streams and services between accounts
-- **Enforce** resource limits for tenants
-- **Create** permissions for each service without server changes
-
----
-
-##### NATS For Micro-service Architectures
-
-## Location Transparency
-
-Location transparency is a key characteristic of service-oriented architecture.
-
-Consumers of a service do not know a service's location until they locate it in the registry.
-
-The lookup and dynamic binding to a service at runtime allows the service implementation to move from location to location without the client's knowledge.
-
----
-
-##### NATS For Micro-service Architectures
-
-## Location Transparency
-
-- Free **Service Discovery** via subject based addressing
-- **Easily move** services between cloud providers
-- **Automatically** get routed to the closest responder
-- **Traffic Shaping** and **Subject mapping**
-
----
-
-##### NATS For Micro-service Architectures
-
-## Observability
-
-- **Observe traffic** in real time
-- **Gather metrics** on each of your services automatically via `nats micro`
-- **Filter metrics ingestion** via subjects
-
----
-
-##### NATS For Micro-service Architectures
-
-## Multi-pattern development
-
-- Synchronous **Request** and **Reply**
-- Asynchronous **Publish** and **Subscribe**
-- **Streaming** with NATS JetStream
-  - Key/Value and Object store
-- All with multi-language support!
-
----
-
-#### Exercise #3:
-
-## Building a Go Micro-service
-
----
-
-##### Building a Go MicroService
-
-## NATS `micro` package
-
-- Set of conventions for microservices
-- Service discovery
-- Load balancing
-- Metrics and monitoring
-- Metadata
-
----
-
-##### Building a Go MicroService
-
-## Start a `micro` from NATS CLI
-
-```bash
-$ nats micro serve hello \
-    -H Owner="Your Name"
-```
-
-... And make a request
-
-```bash
-$ nats req hello.echo ""
-```
-
----
-
-##### Building a Go MicroService
-
-## Start a new Go project
-
-```bash
-$ mkdir my_service && cd my_service
-$ go mod init github.com/[ME]/my_service
-$ go get github.com/nats-io/nats.go@latest
-```
-
----
-
-#### Exercise #4:
-
-## Connecting the Room Part II
-
----
-
-#### Lecture:
-
-## NATS Server Topologies
-
----
-
-##### NATS Server Topologies
-
-## Global Scale and Diversity
-
-- **Single Server** - Millions of messages per sec. ~70GiB throughput
-- **Clusters and Superclusters** - Fully meshed groups of servers that can span the globe
-- **Leaf Nodes** - Extend a NATS system with your own private island
-
----
-
-##### NATS Server Topologies
-
-## An Illustrated Guide
-
----
-
-#### Exercise 5:
-
-## Installing and Connecting to a NATS Server
-
----
-
-#### Exercise 6:
-
-## Leaf Nodes
-
----
-
-#### Lecture:
-
 ## NATS JetStream
 
 ---
 
-##### NATS JetStream
-
+##### Rethinking Connectivity
 ## What is JetStream?
 
 JetStream is a next-gen persistence layer built on top of NATS Core that allows temporal decoupling between subscribers and publishers.
@@ -463,8 +161,7 @@ It is multi-tenant, highly configurable and globally scalable.
 
 ---
 
-##### NATS JetStream
-
+##### Rethinking Connectivity
 ## What is JetStream?
 
 - **Secure** data streams with **multiple consumer models**
@@ -475,49 +172,102 @@ It is multi-tenant, highly configurable and globally scalable.
 
 ---
 
-##### NATS JetStream
-
-## JetStream Demo
-
-https://nats-whiteboard.onrender.com/?room=rhxghz9f
+##### Rethinking Connectivity
+## NATS Demo
 
 ---
 
-##### NATS JetStream
-
-## An Illustrated Guide
+## NATS for Fleet Management
 
 ---
 
-#### Exercise 7:
+##### NATS For Fleet Management
+## What's a Fleet?
 
-## Creating your first Stream
-
----
-
-#### Exercise 8:
-
-## Key/Value and Object Store
-
----
-
-#### Exercise 9:
-
-## Connecting the Room Part III
++ Large number of distributed devices
++ Broad variance in hardware profiles
+    - Microcontrollers, SBCs, Mobile devices, PCs
++ Unreliable network connectivity
++ Perimeterless security
 
 ---
 
----
-
-## Closing Ceremony
-
----
-
-#### Bonus Lecture:
-
-## Authentication and Authorization
+##### NATS For Fleet Management
+## 4 Fleet Management Patterns
++ Live Querying
++ Configuration Management
++ Remote Commands
++ Store and Forward
 
 ---
+
+##### 4 Fleet Management Patterns
+## Live Querying
+
+<split left="3">
+
+- Real-time information for every device online.
+- Select, filter, group.
+- Direct answers from the devices.
+
+![[live-query.excalidraw|500]]
+
+<split>
+
+---
+
+##### 4 Fleet Management Patterns
+## Configuration Management
+
+<split left="3">
+
+- Push configuration updates to groups of devices.
+- Must be available when devices are offline.
+- Devices watch for changes in real-time.
+
+![[config-management.excalidraw|500]]
+
+<split>
+    
+---
+
+##### 4 Fleet Management Patterns
+## Remote Commands
+
+<split left="3">
+
+- Execute commands on one or more of devices.
+- Enqueue commands for offline devices to catch up when connected.
+- Evict commands that are no-longer relevant.
+
+![[remote-commands.excalidraw|500]]
+
+<split>
+
+---
+
+##### 4 Fleet Management Patterns
+## Store and Forward
+
+<split left="3">
+
+- Devices can store data while being offline.
+- Data is synchronized automatically when back online.
+- Application logic does not change between states.
+
+![[store-and-forward.excalidraw|500]]
+
+<split>
+
+---
+
+##### 4 Fleet Management Patterns
+# Let's try some of these out!
+
+---
+
+# Thank you!
+- TODO: Add feedback and more info on Synadia
 
 ---
 
