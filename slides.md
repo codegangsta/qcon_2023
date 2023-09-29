@@ -48,8 +48,6 @@ Senior Software Engineer at Synadia
 
 ---
 
----
-
 # 🙏 Pray to the Demo Gods
 
 ---
@@ -96,7 +94,7 @@ It aims to **simplify** the number of technologies you use for your services to 
 
 ##### Rethinking Connectivity
 
-# Introducing NATS
+## Introducing NATS
 
 - Location-independent addressing
 - M:N communications
