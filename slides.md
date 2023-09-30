@@ -22,7 +22,6 @@ Senior Software Engineer at Synadia
 ---
 
 ## Before we begin...
-{Add link to survey app here}
 
 ---
 
@@ -264,11 +263,21 @@ It is multi-tenant, highly configurable and globally scalable.
 
 ---
 
-# Thank you!
-- TODO: Add feedback and more info on Synadia
+## Please vote and leave feedback!
 
----
+<split right="1" gap="1">
+![[qr-code.png|400]] <!-- element style="border-radius:3rem" -->
 
----
+::: block
+
+#### Learn more about NATS
+- https://nats.io
+- https://synadia.com/screencast
+- https://natsbyexample.com
+
+:::
+
+
+<split>
 
 ---
