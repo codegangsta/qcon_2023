@@ -1,5 +1,6 @@
 "use client";
 
+import Results from "@/components/results";
 import Start, { StartFormData } from "@/components/start";
 import Survey, { SurveyFormData } from "@/components/survey";
 import { useToast } from "@/components/ui/use-toast";
@@ -68,6 +69,7 @@ export default function Home() {
     <div className="flex flex-grow items-center justify-center">
       {step === Step.Start && <Start onSubmit={onStartSubmit} />}
       {step === Step.Survey && <Survey onSubmit={onSurveySubmit} />}
+      {step === Step.Results && <Results />}
     </div>
   );
 }
