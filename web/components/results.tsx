@@ -70,6 +70,11 @@ export default function Results({ nickname }: Props) {
         name: "qcon_attendee",
         description: "QCon Attendee Service",
         version: "0.0.1",
+        statsHandler: (stats) => {
+          return Promise.resolve({
+            server: connection.info?.server_name,
+          });
+        },
       });
 
       service.addEndpoint("device_info", {
@@ -90,6 +95,17 @@ export default function Results({ nickname }: Props) {
           } else {
             log(`Ignoring request: Does not match device filter`);
           }
+        },
+      });
+
+      service.addEndpoint("advertise", {
+        queue: service.info().id,
+        subject: "qcon.advertise",
+        metadata: {
+          description: "Advertise a new server for clients to connect to.",
+        },
+        handler: async (err, msg) => {
+          log(`Received request on ${msg.subject}`);
         },
       });
 

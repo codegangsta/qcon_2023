@@ -20,13 +20,9 @@ const bearerJwt =
 
 export default function Home() {
   const [step, setStep] = useState(Step.Start);
-  const [nickname, setNickname] = useState<string | null>(
-    localStorage.getItem("nickname")
-  );
+  const [nickname, setNickname] = useState<string | null>();
   const { connection, connect } = useNatsStore();
-  const [submitted, setSubmitted] = useState<boolean>(
-    localStorage.getItem("survey") == "true"
-  );
+  const [submitted, setSubmitted] = useState<boolean>();
   const [connectOpts, setConnectOpts] = useState<ConnectionOptions>({
     servers: ["wss://nats.codegangsta.dev"],
     authenticator: jwtAuthenticator(bearerJwt),
@@ -36,6 +32,12 @@ export default function Home() {
   const { encode } = JSONCodec();
 
   useEffect(() => {
+    if (localStorage.getItem("survey")) {
+      setSubmitted(true);
+    }
+    if (localStorage.getItem("nickname")) {
+      setNickname(localStorage.getItem("nickname"));
+    }
     if (nickname) {
       connect({ name: nickname, ...connectOpts });
     }
