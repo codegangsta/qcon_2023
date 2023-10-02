@@ -20,8 +20,13 @@ const bearerJwt =
 
 export default function Home() {
   const [step, setStep] = useState(Step.Start);
-  const [nickname, setNickname] = useState<string>();
+  const [nickname, setNickname] = useState<string | null>(
+    localStorage.getItem("nickname")
+  );
   const { connection, connect } = useNatsStore();
+  const [submitted, setSubmitted] = useState<boolean>(
+    localStorage.getItem("survey") == "true"
+  );
   const [connectOpts, setConnectOpts] = useState<ConnectionOptions>({
     servers: ["wss://nats.codegangsta.dev"],
     authenticator: jwtAuthenticator(bearerJwt),
@@ -34,7 +39,10 @@ export default function Home() {
     if (nickname) {
       connect({ name: nickname, ...connectOpts });
     }
-  }, [connect, connectOpts, nickname]);
+    if (submitted) {
+      setStep(Step.Results);
+    }
+  }, [connect, connectOpts, nickname, submitted]);
 
   const onStartSubmit = (data: StartFormData) => {
     setNickname(data.nickname);
@@ -62,14 +70,18 @@ export default function Home() {
         })
       );
 
-    setStep(Step.Survey);
+    if (nickname) {
+      localStorage.setItem("survey", "true");
+      localStorage.setItem("nickname", nickname);
+      setStep(Step.Results);
+    }
   };
 
   return (
     <div className="flex flex-grow items-center justify-center">
       {step === Step.Start && <Start onSubmit={onStartSubmit} />}
       {step === Step.Survey && <Survey onSubmit={onSurveySubmit} />}
-      {step === Step.Results && <Results nickname={nickname} />}
+      {step === Step.Results && nickname && <Results nickname={nickname} />}
     </div>
   );
 }

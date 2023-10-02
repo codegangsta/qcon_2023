@@ -40,7 +40,7 @@ export default function Results({ nickname }: Props) {
       return;
     }
 
-    log(`Connected to NATS ${connection.getServer()}`);
+    log(`Connected to NATS ${connection.getServer()} as "${nickname}"`);
 
     const opts = consumerOpts();
     opts.orderedConsumer();
@@ -57,7 +57,7 @@ export default function Results({ nickname }: Props) {
     return () => {
       sub.then((s) => s.unsubscribe());
     };
-  }, [connection]);
+  }, [connection, nickname]);
 
   useEffect(() => {
     if (!connection) {
@@ -73,7 +73,7 @@ export default function Results({ nickname }: Props) {
       });
 
       service.addEndpoint("device_info", {
-        queue: "",
+        queue: service.info().id,
         subject: "qcon.device_info",
         metadata: {
           description: "Returns device info with optional filtering.",
