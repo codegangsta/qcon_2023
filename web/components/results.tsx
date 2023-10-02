@@ -72,6 +72,17 @@ export default function Results() {
                 legend: {
                   show: false,
                 },
+                stroke: {
+                  show: false,
+                },
+                theme: {
+                  monochrome: {
+                    enabled: true,
+                    color: "rgb(110, 86, 207);",
+                    shadeTo: "dark",
+                    shadeIntensity: 0.65,
+                  },
+                },
               }}
               series={seriesData(question)}
             />
