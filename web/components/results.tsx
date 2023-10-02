@@ -1,43 +1,108 @@
-import { useCallback, useEffect, useState } from "react";
-import {
-  Familiarity,
-  SurveyFormData,
-  SurveyQuestion,
-  SurveyQuestions,
-} from "./survey";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { SurveyFormData, SurveyQuestion, SurveyQuestions } from "./survey";
 import { useNatsStore } from "./use-nats-store";
 import { JSONCodec, consumerOpts } from "nats.ws";
 import dynamic from "next/dynamic";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
-const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
+import DeviceDetector from "device-detector-js";
+import { isSubset } from "./util";
 
+const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
 const { decode } = JSONCodec<SurveyFormData>();
 
-export default function Results() {
+interface Props {
+  nickname: string;
+}
+
+export default function Results({ nickname }: Props) {
   const { connection } = useNatsStore();
   const [logs, setLogs] = useState<string[]>([]);
   const [results, setResults] = useState<SurveyFormData[]>([]);
+  const logContainer = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (logContainer.current) {
+      logContainer.current.scrollTop = logContainer.current.scrollHeight;
+    }
+  }, [logs]);
 
   const log = (text: string) => {
     const d = new Date();
     text = `[${d.toLocaleTimeString("en-US", { timeStyle: "long" })}] ${text}`;
+    // keep log scrollback size to 1000 lines
+    setLogs((current) => current.slice(-1000));
     setLogs((current) => [...current, text]);
   };
 
-  const consume = useCallback(async () => {
+  useEffect(() => {
     setResults([]);
     if (!connection) {
       return;
     }
 
+    log(`Connected to NATS ${connection.getServer()}`);
+
     const opts = consumerOpts();
     opts.orderedConsumer();
     const js = connection.jetstream();
-    const sub = await js.subscribe("survey.submitted", opts);
-    for await (const m of sub) {
-      setResults((current) => [...current, decode(m.data)]);
-    }
+    const sub = (async () => {
+      const sub = await js.subscribe("survey.submitted", opts);
+      for await (const m of sub) {
+        setResults((current) => [...current, decode(m.data)]);
+      }
+
+      return sub;
+    })();
+
+    return () => {
+      sub.then((s) => s.unsubscribe());
+    };
   }, [connection]);
+
+  useEffect(() => {
+    if (!connection) {
+      return;
+    }
+    const { encode } = JSONCodec();
+
+    const service = (async () => {
+      const service = await connection.services.add({
+        name: "qcon_attendee",
+        description: "QCon Attendee Service",
+        version: "0.0.1",
+      });
+
+      service.addEndpoint("device_info", {
+        queue: "",
+        subject: "qcon.device_info",
+        metadata: {
+          description: "Returns device info with optional filtering.",
+        },
+        handler: async (err, msg) => {
+          log(`Received request on ${msg.subject}`);
+
+          const device = new DeviceDetector().parse(navigator.userAgent);
+          const payload = { name: nickname, ...device };
+
+          if (msg.data.length == 0 || isSubset(msg.json(), device)) {
+            log(`Sending response: ${JSON.stringify(payload)}`);
+            msg.respond(encode(payload));
+          } else {
+            log(`Ignoring request: Does not match device filter`);
+          }
+        },
+      });
+
+      const info = service.info();
+      log(`Initialized "${info.name}" service v${info.version}`);
+
+      return service;
+    })();
+
+    return () => {
+      service.then((s) => s.stop());
+    };
+  }, [connection, nickname]);
 
   const seriesData = (question: SurveyQuestion) => {
     const d = question.options.map((option) => {
@@ -49,23 +114,9 @@ export default function Results() {
       });
       return n;
     });
-    console.log(question.id, d);
 
     return d;
   };
-
-  useEffect(() => {
-    consume();
-  }, [consume]);
-
-  useEffect(() => {
-    if (!connection) {
-      return;
-    }
-
-    // set connected server in the logs
-    log(`Connected to ${connection.getServer()}`);
-  }, [connection]);
 
   if (results.length == 0) {
     return null;
@@ -109,10 +160,13 @@ export default function Results() {
       </div>
 
       <Card>
-        <CardHeader>
+        <CardHeader className="w-full">
           <CardTitle>Logs</CardTitle>
         </CardHeader>
-        <CardContent className="font-mono text-zinc-400 h-72 overflow-scroll">
+        <CardContent
+          ref={logContainer}
+          className="font-mono text-zinc-400 h-72 overflow-y-scroll overflow-x-hidden"
+        >
           {logs.map((log, i) => (
             <div key={i}>{log}</div>
           ))}

@@ -69,7 +69,7 @@ export default function Home() {
     <div className="flex flex-grow items-center justify-center">
       {step === Step.Start && <Start onSubmit={onStartSubmit} />}
       {step === Step.Survey && <Survey onSubmit={onSurveySubmit} />}
-      {step === Step.Results && <Results />}
+      {step === Step.Results && <Results nickname={nickname} />}
     </div>
   );
 }
