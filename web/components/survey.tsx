@@ -1,42 +1,34 @@
 "use client";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import { z } from "zod";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 
-enum Familiarity {
+export enum Familiarity {
   None = "I'm a complete newbie",
   Some = "I've heard of it",
   Evaluated = "I've used it before",
   InProduction = "I'm using NATS in production",
 }
 
-enum UseCase {
+export enum UseCase {
   EventStreaming = "Event streaming in NATS",
   Microservices = "NATS for microservice architectures",
   IoT = "NATS for IoT, Edge and Fleet management",
 }
 
-enum Industry {
+export enum Industry {
   Finance = "Finance",
   Retail = "Retail",
   Healthcare = "Healthcare",
@@ -52,6 +44,30 @@ const schema = z.object({
   use_case: z.nativeEnum(UseCase),
   industry: z.nativeEnum(Industry),
 });
+
+export interface SurveyQuestion {
+  label: string;
+  id: keyof SurveyFormData;
+  options: string[];
+}
+
+export const SurveyQuestions: SurveyQuestion[] = [
+  {
+    label: "How familiar are you with the NATS messaging system?",
+    id: "familiarity",
+    options: Object.values(Familiarity),
+  },
+  {
+    label: "What use cases are you interested in learning more about?",
+    id: "use_case",
+    options: Object.values(UseCase),
+  },
+  {
+    label: "What industry do you work in?",
+    id: "industry",
+    options: Object.values(Industry),
+  },
+];
 
 export type SurveyFormData = z.infer<typeof schema>;
 
@@ -77,103 +93,40 @@ export default function Survey(props: Props) {
               onSubmit={form.handleSubmit(props.onSubmit)}
               className="space-y-6"
             >
-              <FormField
-                name="familiarity"
-                control={form.control}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      How familiar are you with the NATS messaging system?
-                    </FormLabel>
-                    <FormControl>
-                      <RadioGroup
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                        className="flex flex-col space-y-1"
-                      >
-                        {Object.values(Familiarity).map((value) => (
-                          <FormItem
-                            key={value}
-                            className="flex items-center space-x-3 space-y-0"
-                          >
-                            <FormControl>
-                              <RadioGroupItem value={value}></RadioGroupItem>
-                            </FormControl>
-                            <FormLabel className="font-normal">
-                              {value}
-                            </FormLabel>
-                          </FormItem>
-                        ))}
-                      </RadioGroup>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                name="use_case"
-                control={form.control}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>
-                      What use cases are you interested in learning more about?
-                    </FormLabel>
-                    <FormControl>
-                      <RadioGroup
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                        className="flex flex-col space-y-1"
-                      >
-                        {Object.values(UseCase).map((value) => (
-                          <FormItem
-                            key={value}
-                            className="flex items-center space-x-3 space-y-0"
-                          >
-                            <FormControl>
-                              <RadioGroupItem value={value}></RadioGroupItem>
-                            </FormControl>
-                            <FormLabel className="font-normal">
-                              {value}
-                            </FormLabel>
-                          </FormItem>
-                        ))}
-                      </RadioGroup>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                name="industry"
-                control={form.control}
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>What industry do you work in?</FormLabel>
-                    <FormControl>
-                      <RadioGroup
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                        className="flex flex-col space-y-1"
-                      >
-                        {Object.values(Industry).map((value) => (
-                          <FormItem
-                            key={value}
-                            className="flex items-center space-x-3 space-y-0"
-                          >
-                            <FormControl>
-                              <RadioGroupItem value={value}></RadioGroupItem>
-                            </FormControl>
-                            <FormLabel className="font-normal">
-                              {value}
-                            </FormLabel>
-                          </FormItem>
-                        ))}
-                      </RadioGroup>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {SurveyQuestions.map((question) => (
+                <FormField
+                  key={question.id}
+                  name={question.id}
+                  control={form.control}
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>{question.label}</FormLabel>
+                      <FormControl>
+                        <RadioGroup
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          className="flex flex-col space-y-1"
+                        >
+                          {question.options.map((value) => (
+                            <FormItem
+                              key={value}
+                              className="flex items-center space-x-3 space-y-0"
+                            >
+                              <FormControl>
+                                <RadioGroupItem value={value}></RadioGroupItem>
+                              </FormControl>
+                              <FormLabel className="font-normal">
+                                {value}
+                              </FormLabel>
+                            </FormItem>
+                          ))}
+                        </RadioGroup>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              ))}
               <Button type="submit">Get Started</Button>
             </form>
           </Form>

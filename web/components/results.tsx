@@ -1,7 +1,15 @@
 import { useCallback, useEffect, useState } from "react";
-import { SurveyFormData } from "./survey";
+import {
+  Familiarity,
+  SurveyFormData,
+  SurveyQuestion,
+  SurveyQuestions,
+} from "./survey";
 import { useNatsStore } from "./use-nats-store";
 import { JSONCodec, consumerOpts } from "nats.ws";
+import dynamic from "next/dynamic";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
 
 const { decode } = JSONCodec<SurveyFormData>();
 
@@ -24,13 +32,52 @@ export default function Results() {
     }
   }, [connection]);
 
+  const seriesData = (question: SurveyQuestion) => {
+    const d = question.options.map((option) => {
+      var n = 0;
+      results.forEach((data) => {
+        if (data[question.id] == option) {
+          n++;
+        }
+      });
+      return n;
+    });
+    console.log(question.id, d);
+
+    return d;
+  };
+
   useEffect(() => {
     consume();
   }, [consume]);
 
+  if (results.length == 0) {
+    return null;
+  }
+
   return (
-    <div>
-      <span>hi</span>
+    <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-4">
+      {SurveyQuestions.map((question) => (
+        <Card key={question.id}>
+          <CardHeader>
+            <CardTitle className="line-clamp-2">{question.label}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Chart
+              width={"100%"}
+              height={300}
+              type="donut"
+              options={{
+                labels: question.options,
+                legend: {
+                  show: false,
+                },
+              }}
+              series={seriesData(question)}
+            />
+          </CardContent>
+        </Card>
+      ))}
     </div>
   );
 }
