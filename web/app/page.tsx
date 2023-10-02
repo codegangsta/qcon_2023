@@ -2,8 +2,9 @@
 
 import Start, { StartFormData } from "@/components/start";
 import Survey, { SurveyFormData } from "@/components/survey";
+import { useToast } from "@/components/ui/use-toast";
 import { useNatsStore } from "@/components/use-nats-store";
-import { ConnectionOptions, jwtAuthenticator } from "nats.ws";
+import { ConnectionOptions, JSONCodec, jwtAuthenticator } from "nats.ws";
 import { useEffect, useState } from "react";
 
 enum Step {
@@ -25,18 +26,14 @@ export default function Home() {
     authenticator: jwtAuthenticator(bearerJwt),
   });
 
+  const { toast } = useToast();
+  const { encode } = JSONCodec();
+
   useEffect(() => {
     if (nickname) {
       connect({ name: nickname, ...connectOpts });
     }
   }, [connect, connectOpts, nickname]);
-
-  useEffect(() => {
-    if (connection) {
-      console.log("NATS Connection", connection);
-      connection.publish("hello", "world");
-    }
-  });
 
   const onStartSubmit = (data: StartFormData) => {
     setNickname(data.nickname);
@@ -44,7 +41,26 @@ export default function Home() {
   };
 
   const onSurveySubmit = (data: SurveyFormData) => {
-    console.log(data);
+    if (!connection) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Not connected to NATS",
+      });
+      return;
+    }
+
+    const js = connection.jetstream();
+    js.publish("survey.submitted", encode(data))
+      .then(() => setStep(Step.Results))
+      .catch((err) =>
+        toast({
+          variant: "destructive",
+          title: "NATS Error",
+          description: err.message,
+        })
+      );
+
     setStep(Step.Survey);
   };
 
