@@ -15,7 +15,14 @@ const { decode } = JSONCodec<SurveyFormData>();
 
 export default function Results() {
   const { connection } = useNatsStore();
+  const [logs, setLogs] = useState<string[]>([]);
   const [results, setResults] = useState<SurveyFormData[]>([]);
+
+  const log = (text: string) => {
+    const d = new Date();
+    text = `[${d.toLocaleTimeString("en-US", { timeStyle: "long" })}] ${text}`;
+    setLogs((current) => [...current, text]);
+  };
 
   const consume = useCallback(async () => {
     setResults([]);
@@ -51,44 +58,66 @@ export default function Results() {
     consume();
   }, [consume]);
 
+  useEffect(() => {
+    if (!connection) {
+      return;
+    }
+
+    // set connected server in the logs
+    log(`Connected to ${connection.getServer()}`);
+  }, [connection]);
+
   if (results.length == 0) {
     return null;
   }
 
   return (
-    <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-4">
-      {SurveyQuestions.map((question) => (
-        <Card key={question.id}>
-          <CardHeader>
-            <CardTitle className="line-clamp-2">{question.label}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Chart
-              width={"100%"}
-              height={300}
-              type="donut"
-              options={{
-                labels: question.options,
-                legend: {
-                  show: false,
-                },
-                stroke: {
-                  show: false,
-                },
-                theme: {
-                  monochrome: {
-                    enabled: true,
-                    color: "rgb(110, 86, 207);",
-                    shadeTo: "dark",
-                    shadeIntensity: 0.65,
+    <div className="flex flex-col gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {SurveyQuestions.map((question) => (
+          <Card key={question.id}>
+            <CardHeader>
+              <CardTitle className="line-clamp-2">{question.label}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Chart
+                width={"100%"}
+                height={300}
+                type="donut"
+                options={{
+                  labels: question.options,
+                  legend: {
+                    show: false,
                   },
-                },
-              }}
-              series={seriesData(question)}
-            />
-          </CardContent>
-        </Card>
-      ))}
+                  stroke: {
+                    show: false,
+                  },
+                  theme: {
+                    monochrome: {
+                      enabled: true,
+                      color: "rgb(110, 86, 207);",
+                      shadeTo: "dark",
+                      shadeIntensity: 0.65,
+                    },
+                  },
+                }}
+                series={seriesData(question)}
+              />
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Logs</CardTitle>
+        </CardHeader>
+        <CardContent className="font-mono text-zinc-400 h-72 overflow-scroll">
+          {logs.map((log, i) => (
+            <div key={i}>{log}</div>
+          ))}
+        </CardContent>
+      </Card>
     </div>
   );
 }
