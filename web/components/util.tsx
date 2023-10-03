@@ -14,6 +14,7 @@ export function isSubset(subset: object, main: object) {
     if (!main.hasOwnProperty(key)) {
       return false;
     }
+    /* @ts-ignore */
     if (!isSubset(subset[key], main[key])) {
       return false;
     }
@@ -21,3 +22,18 @@ export function isSubset(subset: object, main: object) {
 
   return true;
 }
+
+export const isClient = () => typeof window !== "undefined";
+
+export const setItem = (key: string, value: string) => {
+  if (isClient()) {
+    window.localStorage.setItem(key, value);
+  }
+};
+
+export const getItem = (key: string) => {
+  if (isClient()) {
+    return window.localStorage.getItem(key);
+  }
+  return null;
+};

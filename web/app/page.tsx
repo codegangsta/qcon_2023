@@ -5,6 +5,7 @@ import Start, { StartFormData } from "@/components/start";
 import Survey, { SurveyFormData } from "@/components/survey";
 import { useToast } from "@/components/ui/use-toast";
 import { useNatsStore } from "@/components/use-nats-store";
+import { getItem, setItem } from "@/components/util";
 import { ConnectionOptions, JSONCodec, jwtAuthenticator } from "nats.ws";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -26,12 +27,10 @@ const connectOpts = {
 
 export default function Home() {
   const [step, setStep] = useState(Step.Start);
-  const [nickname, setNickname] = useState<string | null>(
-    localStorage.getItem("nickname")
-  );
+  const [nickname, setNickname] = useState<string | null>(getItem("nickname"));
   const { connection, connect } = useNatsStore();
   const [submitted, setSubmitted] = useState<boolean>(
-    localStorage.getItem("survey") === "true"
+    getItem("survey") === "true"
   );
   const connectURL = useSearchParams().get("connect");
 
@@ -82,8 +81,8 @@ export default function Home() {
       );
 
     if (nickname) {
-      localStorage.setItem("survey", "true");
-      localStorage.setItem("nickname", nickname);
+      setItem("survey", "true");
+      setItem("nickname", nickname);
       setStep(Step.Results);
     }
   };
