@@ -22,7 +22,7 @@ const bearerJwt =
 
 const connectOpts = {
   // servers: "ws://localhost:8080",
-  servers: "wss://nats.codegangsta.dev",
+  servers: "wss://connect.codegangsta.dev:8080",
   authenticator: jwtAuthenticator(bearerJwt),
 };
 

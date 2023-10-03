@@ -1,9 +1,7 @@
 move::
-	@addr=$$(ipconfig getifaddr en0); \
-	nats pub qcon.advertise ws://$$addr:8080
+	nats pub qcon.advertise wss://nats.codegangsta.dev:8080
 
 unmove::
-	@addr=$$(ipconfig getifaddr en0); \
 	nats pub qcon.advertise ""
 
 leaf::
