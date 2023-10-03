@@ -19,6 +19,7 @@ export default function Results({ nickname }: Props) {
   const [logs, setLogs] = useState<string[]>([]);
   const [results, setResults] = useState<SurveyFormData[]>([]);
   const logContainer = useRef<HTMLDivElement>(null);
+  const { chart_color } = useNatsStore((state) => state.config);
 
   useEffect(() => {
     if (logContainer.current) {
@@ -182,7 +183,7 @@ export default function Results({ nickname }: Props) {
                   theme: {
                     monochrome: {
                       enabled: true,
-                      color: "rgb(110, 86, 207);",
+                      color: chart_color,
                       shadeTo: "dark",
                       shadeIntensity: 0.65,
                     },
