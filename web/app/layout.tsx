@@ -19,7 +19,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <main className="flex min-h-screen flex-col justify-between p-24">
+          <main className="flex min-h-screen flex-col justify-between p-8 md:p-12 ls:p-24">
             {children}
           </main>
         </ThemeProvider>

@@ -1,9 +1,9 @@
 move::
-	@addr=$$(ipconfig getifaddr en1); \
+	@addr=$$(ipconfig getifaddr en0); \
 	nats pub qcon.advertise ws://$$addr:8080
 
 unmove::
-	@addr=$$(ipconfig getifaddr en1); \
+	@addr=$$(ipconfig getifaddr en0); \
 	nats pub qcon.advertise ""
 
 leaf::

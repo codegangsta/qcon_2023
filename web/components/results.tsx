@@ -7,6 +7,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import DeviceDetector from "device-detector-js";
 import { isSubset } from "./util";
 import { usePathname, useRouter } from "next/navigation";
+import {
+  Circle,
+  CircleDot,
+  CircleDotIcon,
+  CircleOff,
+  Code,
+  CodeIcon,
+  Server,
+  Terminal,
+} from "lucide-react";
 
 const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
 const { decode } = JSONCodec<SurveyFormData>();
@@ -185,25 +195,38 @@ export default function Results({ nickname }: Props) {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-row">
-        <span className="font-medium font-mono">
-          server: {connection?.info?.server_name}
-        </span>
-        <div className="flex-grow flex-1"></div>
-        {rtt != undefined && (
-          <span className="text-zinc-400 font-mono">{rtt}ms</span>
-        )}
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <Card>
+        <CardHeader className="p-3 md:p-6">
+          <div className="flex flex-row">
+            <span className="font-medium font-mono flex flex-row gap-3">
+              <div className="w-5 h-5 p-2">
+                <span className="w-3 h-3 block bg-red-500 rounded-full"></span>
+              </div>
+              <div className="flex flex-col gap-1">
+                <span>{connection?.info?.server_name}</span>
+                <span className="flex flex-row text-sm text-zinc-400 font-mono gap-2">
+                  <span>RTT:</span>
+                  {rtt != undefined && <span>{rtt}ms</span>}
+                </span>
+              </div>
+            </span>
+            <div className="flex-grow flex-1"></div>
+          </div>
+        </CardHeader>
+      </Card>
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
         {SurveyQuestions.map((question) => (
           <Card key={question.id}>
-            <CardHeader>
-              <CardTitle className="line-clamp-2">{question.label}</CardTitle>
+            <CardHeader className="p-3 md:p-6">
+              <CardTitle className="line-clamp-2 text-base sm:text-lg lg:text-2xl">
+                {question.label}
+              </CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-3 pt-0 md:p-6 md:pt-0">
               <Chart
+                className="min-h-[48px]"
                 width={"100%"}
-                height={300}
+                height="auto"
                 type="donut"
                 options={{
                   labels: question.options,
@@ -229,12 +252,15 @@ export default function Results({ nickname }: Props) {
         ))}
       </div>
       <Card>
-        <CardHeader className="w-full">
-          <CardTitle>Logs</CardTitle>
+        <CardHeader className="w-full p-3 md:p-6">
+          <CardTitle className="text-base sm:text-lg lg:text-2xl flex flex-row gap-3">
+            <Terminal className="text-zinc-300 p-0.5" />
+            <span>Logs</span>
+          </CardTitle>
         </CardHeader>
         <CardContent
           ref={logContainer}
-          className="font-mono text-zinc-400 h-72 overflow-y-scroll overflow-x-hidden"
+          className="font-mono text-xs md:text-base text-zinc-400 h-72 overflow-y-scroll overflow-x-hidden p-3 pt-0 md:p-6 md:pt-0"
         >
           {logs.map((log, i) => (
             <div key={i}>{log}</div>
