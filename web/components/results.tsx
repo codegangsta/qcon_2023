@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { SurveyFormData, SurveyQuestion, SurveyQuestions } from "./survey";
 import { useNatsStore } from "./use-nats-store";
-import { JSONCodec, consumerOpts } from "nats.ws";
+import { JSONCodec, StringCodec, consumerOpts } from "nats.ws";
 import dynamic from "next/dynamic";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import DeviceDetector from "device-detector-js";
@@ -15,7 +15,7 @@ interface Props {
 }
 
 export default function Results({ nickname }: Props) {
-  const { connection } = useNatsStore();
+  const { connection, connect } = useNatsStore();
   const [logs, setLogs] = useState<string[]>([]);
   const [results, setResults] = useState<SurveyFormData[]>([]);
   const logContainer = useRef<HTMLDivElement>(null);
@@ -40,11 +40,15 @@ export default function Results({ nickname }: Props) {
       return;
     }
 
-    log(`Connected to NATS ${connection.getServer()} as "${nickname}"`);
+    log(
+      `Connected to ${
+        connection.info?.server_name
+      } (${connection.getServer()}) as "${nickname}"`
+    );
 
     const opts = consumerOpts();
     opts.orderedConsumer();
-    const js = connection.jetstream();
+    const js = connection.jetstream({ domain: "cloud" });
     const sub = (async () => {
       const sub = await js.subscribe("survey.submitted", opts);
       for await (const m of sub) {
@@ -106,6 +110,9 @@ export default function Results({ nickname }: Props) {
         },
         handler: async (err, msg) => {
           log(`Received request on ${msg.subject}`);
+          const sc = StringCodec();
+          const ip = sc.decode(msg.data);
+          connect({ servers: "ws://" + ip + ":8080" });
         },
       });
 

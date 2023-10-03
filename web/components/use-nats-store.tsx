@@ -14,6 +14,7 @@ export const useNatsStore = create<NatsState>((set) => ({
   },
   connect: async (options: ConnectionOptions) => {
     const connection = await connect(options);
+    console.log("Connecting to nats");
     set({ connection });
   },
 }));
