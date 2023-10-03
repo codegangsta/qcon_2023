@@ -1,5 +1,11 @@
 import { create } from "zustand";
-import { NatsConnection, ConnectionOptions, connect } from "nats.ws";
+import {
+  NatsConnection,
+  ConnectionOptions,
+  connect,
+  DebugEvents,
+  Events,
+} from "nats.ws";
 
 const defaultConfig = {
   chart_color: "rgb(110, 86, 207);",
@@ -12,6 +18,7 @@ interface Config {
 interface NatsState {
   logs: string[];
   log: (text: string) => void;
+  status: Events | DebugEvents;
   config: Config;
   connectURL?: string;
   connection: NatsConnection | null;
@@ -20,6 +27,7 @@ interface NatsState {
 
 export const useNatsStore = create<NatsState>((set, get) => ({
   logs: [],
+  status: Events.Reconnect,
   log: (text: string) => {
     const d = new Date();
     text = `[${d.toLocaleTimeString("en-US", {
@@ -32,9 +40,20 @@ export const useNatsStore = create<NatsState>((set, get) => ({
   connection: null,
   rtt: 0,
   connect: async (options: ConnectionOptions) => {
-    const connection = await connect(options);
+    const connection = await connect({ maxReconnectAttempts: -1, ...options });
     await get().connection?.close();
     set({ connection });
+
+    // iterate over status changes
+    async function watchStatus() {
+      for await (const s of connection.status()) {
+        get().log(`Status: ${s.type}`);
+        if (s.type == Events.Disconnect || s.type == Events.Reconnect) {
+          set({ status: s.type });
+        }
+      }
+    }
+    watchStatus();
 
     // Connect to KV config store
     const configStore = await connection.jetstream().views.kv("config");

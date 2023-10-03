@@ -1,22 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { SurveyFormData, SurveyQuestion, SurveyQuestions } from "./survey";
 import { useNatsStore } from "./use-nats-store";
-import { JSONCodec, StringCodec, consumerOpts } from "nats.ws";
+import { Events, JSONCodec, StringCodec, consumerOpts } from "nats.ws";
 import dynamic from "next/dynamic";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import DeviceDetector from "device-detector-js";
 import { isSubset } from "./util";
 import { usePathname, useRouter } from "next/navigation";
-import {
-  Circle,
-  CircleDot,
-  CircleDotIcon,
-  CircleOff,
-  Code,
-  CodeIcon,
-  Server,
-  Terminal,
-} from "lucide-react";
+import { Terminal } from "lucide-react";
 
 const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
 const { decode } = JSONCodec<SurveyFormData>();
@@ -26,7 +17,7 @@ interface Props {
 }
 
 export default function Results({ nickname }: Props) {
-  const { connection, logs, log } = useNatsStore();
+  const { connection, logs, log, status } = useNatsStore();
   const [rtt, setRtt] = useState<number>();
   const [results, setResults] = useState<SurveyFormData[]>([]);
   const logContainer = useRef<HTMLDivElement>(null);
@@ -38,7 +29,7 @@ export default function Results({ nickname }: Props) {
     const { encode } = JSONCodec();
     setRtt(undefined);
     const interval = setInterval(async () => {
-      if (connection) {
+      if (connection && status === Events.Reconnect) {
         const rtt = await connection.rtt();
         setRtt(rtt);
         connection.publish(
@@ -199,9 +190,16 @@ export default function Results({ nickname }: Props) {
         <CardHeader className="p-3 md:p-6">
           <div className="flex flex-row">
             <span className="font-medium font-mono flex flex-row gap-3">
-              <div className="w-5 h-5 p-2">
-                <span className="w-3 h-3 block bg-red-500 rounded-full"></span>
-              </div>
+              {status === Events.Reconnect && (
+                <div className="w-5 h-5 p-2">
+                  <span className="w-3 h-3 block bg-green-500 rounded-full"></span>
+                </div>
+              )}
+              {status === Events.Disconnect && (
+                <div className="w-5 h-5 p-2">
+                  <span className="w-3 h-3 block bg-red-500 rounded-full"></span>
+                </div>
+              )}
               <div className="flex flex-col gap-1">
                 <span>{connection?.info?.server_name}</span>
                 <span className="flex flex-row text-sm text-zinc-400 font-mono gap-2">
