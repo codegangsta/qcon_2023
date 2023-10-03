@@ -15,8 +15,7 @@ interface Props {
 }
 
 export default function Results({ nickname }: Props) {
-  const { connection, connect } = useNatsStore();
-  const [logs, setLogs] = useState<string[]>([]);
+  const { connection, connect, logs, log } = useNatsStore();
   const [results, setResults] = useState<SurveyFormData[]>([]);
   const logContainer = useRef<HTMLDivElement>(null);
   const { chart_color } = useNatsStore((state) => state.config);
@@ -26,13 +25,6 @@ export default function Results({ nickname }: Props) {
       logContainer.current.scrollTop = logContainer.current.scrollHeight;
     }
   }, [logs]);
-
-  const log = (text: string) => {
-    const d = new Date();
-    text = `[${d.toLocaleTimeString("en-US", { timeStyle: "long" })}] ${text}`;
-    setLogs((current) => current.slice(-200));
-    setLogs((current) => [...current, text]);
-  };
 
   useEffect(() => {
     setResults([]);

@@ -10,12 +10,21 @@ interface Config {
 }
 
 interface NatsState {
+  logs: string[];
+  log: (text: string) => void;
   config: Config;
   connection: NatsConnection | null;
   connect: (options: ConnectionOptions) => void;
 }
 
 export const useNatsStore = create<NatsState>((set, get) => ({
+  logs: [],
+  log: (text: string) => {
+    const d = new Date();
+    text = `[${d.toLocaleTimeString("en-US", { timeStyle: "long" })}] ${text}`;
+    set((state) => ({ logs: state.logs.slice(-200) }));
+    set((state) => ({ logs: [...state.logs, text] }));
+  },
   config: defaultConfig,
   connection: null,
   connect: async (options: ConnectionOptions) => {
