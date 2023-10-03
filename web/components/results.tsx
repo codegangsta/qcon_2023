@@ -29,8 +29,7 @@ export default function Results({ nickname }: Props) {
   const log = (text: string) => {
     const d = new Date();
     text = `[${d.toLocaleTimeString("en-US", { timeStyle: "long" })}] ${text}`;
-    // keep log scrollback size to 1000 lines
-    setLogs((current) => current.slice(-1000));
+    setLogs((current) => current.slice(-200));
     setLogs((current) => [...current, text]);
   };
 
@@ -47,8 +46,9 @@ export default function Results({ nickname }: Props) {
     );
 
     const opts = consumerOpts();
+    opts.bindStream("survey");
     opts.orderedConsumer();
-    const js = connection.jetstream({ domain: "cloud" });
+    const js = connection.jetstream();
     const sub = (async () => {
       const sub = await js.subscribe("survey.submitted", opts);
       for await (const m of sub) {
@@ -71,7 +71,7 @@ export default function Results({ nickname }: Props) {
 
     const service = (async () => {
       const service = await connection.services.add({
-        name: "qcon_attendee",
+        name: "qcon",
         description: "QCon Attendee Service",
         version: "0.0.1",
         statsHandler: (stats) => {
@@ -94,10 +94,10 @@ export default function Results({ nickname }: Props) {
           const payload = { name: nickname, ...device };
 
           if (msg.data.length == 0 || isSubset(msg.json(), device)) {
-            log(`Sending response: ${JSON.stringify(payload)}`);
+            log(`\tSending response: ${JSON.stringify(payload)}`);
             msg.respond(encode(payload));
           } else {
-            log(`Ignoring request: Does not match device filter`);
+            log(`\tIgnoring request: Does not match device filter`);
           }
         },
       });
@@ -113,6 +113,19 @@ export default function Results({ nickname }: Props) {
           const sc = StringCodec();
           const ip = sc.decode(msg.data);
           connect({ servers: "ws://" + ip + ":8080" });
+        },
+      });
+
+      service.addEndpoint("nickname", {
+        subject: "qcon.nickname",
+        metadata: {
+          description: "Returns the name of the attendee.",
+        },
+        handler: async (err, msg) => {
+          log(`Received request on ${msg.subject}`);
+          const { encode } = StringCodec();
+          msg.respond(encode(nickname));
+          log(`\tSending response: ${nickname}`);
         },
       });
 

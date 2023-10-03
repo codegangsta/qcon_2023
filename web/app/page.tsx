@@ -61,7 +61,7 @@ export default function Home() {
       return;
     }
 
-    const js = connection.jetstream({ domain: "cloud" });
+    const js = connection.jetstream();
     js.publish("survey.submitted", encode(data))
       .then(() => setStep(Step.Results))
       .catch((err) =>
