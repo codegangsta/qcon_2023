@@ -41,7 +41,6 @@ export const useNatsStore = create<NatsState>((set, get) => ({
       if (entry.key == "all") {
         switch (entry.operation) {
           case "PUT":
-            console.log("Got config update", entry.key, entry.json());
             set({ config: { ...defaultConfig, ...entry.json() } });
             break;
           case "DEL":
@@ -49,6 +48,8 @@ export const useNatsStore = create<NatsState>((set, get) => ({
             set({ config: defaultConfig });
             break;
         }
+
+        get().log("Config: " + JSON.stringify(get().config));
       }
     }
   },

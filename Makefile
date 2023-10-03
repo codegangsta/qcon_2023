@@ -1,5 +1,5 @@
 move::
-	ipconfig getifaddr en1 | nats req qcon.advertise
+	ipconfig getifaddr en1 | nats pub qcon.advertise
 
 leaf::
 	nats-server -c leaf.conf
