@@ -1,11 +1,14 @@
 move::
-	nats pub qcon.advertise wss://nats.codegangsta.dev:8080
+	nats pub qcon.advertise wss://local.codegangsta.dev
 
 unmove::
 	nats pub qcon.advertise ""
 
 leaf::
 	nats-server -c leaf.conf
+
+tunnel:
+	ngrok http --domain=local.codegangsta.dev 8080
 
 mirrors::
 	nats s add --config survey_mirror.json
