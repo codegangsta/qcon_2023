@@ -6,6 +6,7 @@ import dynamic from "next/dynamic";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import DeviceDetector from "device-detector-js";
 import { isSubset } from "./util";
+import { usePathname, useRouter } from "next/navigation";
 
 const Chart = dynamic(() => import("react-apexcharts"), { ssr: false });
 const { decode } = JSONCodec<SurveyFormData>();
@@ -15,10 +16,38 @@ interface Props {
 }
 
 export default function Results({ nickname }: Props) {
-  const { connection, connect, logs, log } = useNatsStore();
+  const { connection, logs, log } = useNatsStore();
+  const [rtt, setRtt] = useState<number>();
   const [results, setResults] = useState<SurveyFormData[]>([]);
   const logContainer = useRef<HTMLDivElement>(null);
   const { chart_color } = useNatsStore((state) => state.config);
+  const router = useRouter();
+  const pathname = usePathname();
+
+  useEffect(() => {
+    const { encode } = JSONCodec();
+    setRtt(undefined);
+    const interval = setInterval(async () => {
+      if (connection) {
+        const rtt = await connection.rtt();
+        setRtt(rtt);
+        connection.publish(
+          `metrics.${connection.info?.server_name}.${connection.info?.client_id}`,
+          encode({
+            rtt: rtt,
+            server: connection.info?.server_name,
+            nickname: nickname,
+            ...connection.info,
+            ...connection.stats(),
+          })
+        );
+      }
+    }, 2000);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [connection, nickname]);
 
   useEffect(() => {
     if (logContainer.current) {
@@ -54,7 +83,7 @@ export default function Results({ nickname }: Props) {
     return () => {
       sub.then((s) => s.unsubscribe());
     };
-  }, [connection, nickname]);
+  }, [connection, nickname, log]);
 
   useEffect(() => {
     if (!connection) {
@@ -104,8 +133,15 @@ export default function Results({ nickname }: Props) {
         handler: async (err, msg) => {
           log(`Received request on ${msg.subject}`);
           const sc = StringCodec();
-          const ip = sc.decode(msg.data);
-          connect({ servers: "ws://" + ip + ":8080" });
+          const url = sc.decode(msg.data);
+          const urlParams = new URLSearchParams(window.location.search);
+          if (url.length > 0) {
+            urlParams.set("connect", url);
+          } else {
+            urlParams.delete("connect");
+          }
+          window.history.pushState(null, "", "?" + urlParams.toString());
+          router.replace(`${pathname}?${urlParams}`);
         },
       });
 
@@ -131,7 +167,7 @@ export default function Results({ nickname }: Props) {
     return () => {
       service.then((s) => s.stop());
     };
-  }, [connection, nickname]);
+  }, [connection, nickname, log, pathname, router]);
 
   const seriesData = (question: SurveyQuestion) => {
     const d = question.options.map((option) => {
@@ -147,12 +183,17 @@ export default function Results({ nickname }: Props) {
     return d;
   };
 
-  if (results.length == 0) {
-    return null;
-  }
-
   return (
     <div className="flex flex-col gap-4">
+      <div className="flex flex-row">
+        <span className="font-medium font-mono">
+          server: {connection?.info?.server_name}
+        </span>
+        <div className="flex-grow flex-1"></div>
+        {rtt != undefined && (
+          <span className="text-zinc-400 font-mono">{rtt}ms</span>
+        )}
+      </div>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {SurveyQuestions.map((question) => (
           <Card key={question.id}>
@@ -187,7 +228,6 @@ export default function Results({ nickname }: Props) {
           </Card>
         ))}
       </div>
-
       <Card>
         <CardHeader className="w-full">
           <CardTitle>Logs</CardTitle>

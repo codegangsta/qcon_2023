@@ -1,5 +1,10 @@
 move::
-	ipconfig getifaddr en1 | nats pub qcon.advertise
+	@addr=$$(ipconfig getifaddr en1); \
+	nats pub qcon.advertise ws://$$addr:8080
+
+unmove::
+	@addr=$$(ipconfig getifaddr en1); \
+	nats pub qcon.advertise ""
 
 leaf::
 	nats-server -c leaf.conf

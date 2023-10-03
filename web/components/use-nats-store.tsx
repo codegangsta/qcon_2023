@@ -13,6 +13,7 @@ interface NatsState {
   logs: string[];
   log: (text: string) => void;
   config: Config;
+  connectURL?: string;
   connection: NatsConnection | null;
   connect: (options: ConnectionOptions) => void;
 }
@@ -27,11 +28,10 @@ export const useNatsStore = create<NatsState>((set, get) => ({
   },
   config: defaultConfig,
   connection: null,
+  rtt: 0,
   connect: async (options: ConnectionOptions) => {
     const connection = await connect(options);
-
     await get().connection?.close();
-
     set({ connection });
 
     // Connect to KV config store
@@ -49,7 +49,8 @@ export const useNatsStore = create<NatsState>((set, get) => ({
             break;
         }
 
-        get().log("Config: " + JSON.stringify(get().config));
+        const config = get().config;
+        get().log("Config: " + JSON.stringify(config));
       }
     }
   },
