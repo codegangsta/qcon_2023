@@ -15,11 +15,14 @@ interface NatsState {
   connect: (options: ConnectionOptions) => void;
 }
 
-export const useNatsStore = create<NatsState>((set) => ({
+export const useNatsStore = create<NatsState>((set, get) => ({
   config: defaultConfig,
   connection: null,
   connect: async (options: ConnectionOptions) => {
     const connection = await connect(options);
+
+    await get().connection?.close();
+
     set({ connection });
 
     // Connect to KV config store
