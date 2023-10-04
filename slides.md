@@ -23,27 +23,7 @@ Senior Software Engineer at Synadia
 
 ## Before we begin...
 
----
-
-## About Me
-
----
-
-##### About Me
-
-::: block
-<split gap="1">
-![Image|80](https://avatars.githubusercontent.com/u/178316?v=4) <!-- element class="bio" style="align-self:flex-end;" -->
-
-### Jeremy Saenz <!-- element style="padding-top:1.75rem;" -->
-
-</split>
-:::
-
-- Long time Gopher (@thecodegangsta)
-- Author of **Martini**, **CLI**, **Negroni**, and more...
-- Working **@synadia** on **NATS**
-- Moved from Engineer -> Product and back again
+https://qcon-2023.vercel.app/
 
 ---
 
@@ -135,11 +115,12 @@ It aims to **simplify** the number of technologies you use for your services to 
 
 ##### Rethinking Connectivity
 
-## Core NATS
+## Core NATS Patterns
 
 - **Request** and **Reply**
 - **Publish** and **Subscribe**
 - **Fan In** and **Fan Out**
+- **Scatter** and **Gather**
 - **Load Balancing** via **Queue Groups**
 
 ---
@@ -152,20 +133,20 @@ It aims to **simplify** the number of technologies you use for your services to 
 ##### Rethinking Connectivity
 ## What is JetStream?
 
-JetStream is a next-gen persistence layer built on top of NATS Core that allows temporal decoupling between subscribers and publishers.
-
-It is multi-tenant, highly configurable and globally scalable.
++ Next-gen distributed persistence layer built on top of NATS Core.
++ Multi-tenant, highly configurable and globally scalable.
++ Fast and simple to replicate and mux/demux data
 
 ---
 
 ##### Rethinking Connectivity
-## What is JetStream?
+## JetStream Patterns?
 
-- **Secure** data streams with **multiple consumer models**
-- **Multiple streaming patterns** supported
-- **Digital twins**/**replicated data**
-- **Mux** and **Demux** data
-- **Materialized views:** key/value and object stores
+- Streaming
+- Work Queues
+- Logs
+- Key/Value stores
+- Object store
 
 ---
 
@@ -191,10 +172,10 @@ It is multi-tenant, highly configurable and globally scalable.
 
 ##### NATS For Fleet Management
 ## 4 Fleet Management Patterns
-+ Live Querying
-+ Configuration Management
-+ Remote Commands
-+ Store and Forward
+- Live Querying
+- Configuration Management
+- Remote Commands
+- Store and Forward
 
 ---
 

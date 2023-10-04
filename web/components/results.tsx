@@ -159,6 +159,19 @@ export default function Results({ nickname }: Props) {
         },
       });
 
+      service.addEndpoint("vote", {
+        queue: service.info().id,
+        subject: "qcon.vote",
+        metadata: {
+          description: "Navigate clients to the voting page",
+        },
+        handler: async (err, msg) => {
+          window.location.href =
+            "https://qconsf.com/presentation/oct2023/rethinking-connectivity-edge-scaling-fleets-low-powered-devices-using-natsio";
+          msg.respond("ok");
+        },
+      });
+
       const info = service.info();
       log(`Initialized "${info.name}" service v${info.version}`);
 
